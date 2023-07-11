@@ -2,7 +2,7 @@
 # Builder Image
 # -------------------------------------------------------------------------------------------------
 
-FROM node:18.16.1-bookworm AS builder
+FROM 818746774418.dkr.ecr.eu-west-1.amazonaws.com/nodejs-base-image:18.16.1-bookworm AS builder
 
 ENV NODE_ENV production
 
@@ -34,7 +34,7 @@ RUN set -eux \
 # Production Image
 # -------------------------------------------------------------------------------------------------
 
-FROM node:18.16.1-bookworm-slim
+FROM 818746774418.dkr.ecr.eu-west-1.amazonaws.com/nodejs-base-image:18.16.1-bookworm-slim
 
 ENV NODE_ENV production
 
