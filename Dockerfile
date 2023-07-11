@@ -22,8 +22,7 @@ WORKDIR /usr/src/app
 COPY --chown=node:node package*.json ./
 
 RUN set -eux \
-    && npm ci --omit=dev \
-    && npm cache clean --force
+    && npm ci --omit=dev
 
 COPY --chown=node:node src ./src
 
