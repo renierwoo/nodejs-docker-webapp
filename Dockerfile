@@ -51,7 +51,7 @@ COPY --chown=node:node --from=builder /usr/src/app/package*.json ./
 COPY --chown=node:node --from=builder /usr/src/app/node_modules ./node_modules
 COPY --chown=node:node --from=builder /usr/src/app/src ./src
 
-EXPOSE 8080
+EXPOSE 80
 
 ENTRYPOINT ["tini", "--"]
 
