@@ -9,6 +9,7 @@ ENV NODE_ENV production
 RUN set -eux \
     && apt-get update && apt-get install -y --no-install-recommends \
     tini \
+    libcap2-bin \
     && rm -rf /var/lib/apt/lists/*
 
 RUN set -eux \
@@ -42,6 +43,8 @@ COPY --from=builder /usr/bin/tini /usr/bin/tini
 RUN set -eux \
     && mkdir -p /opt/app \
     && chown -R node:node /opt/app
+
+RUN setcap cap_net_bind_service=+eip `readlink -f \`which node\``
 
 USER node
 
