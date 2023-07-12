@@ -9,7 +9,6 @@ ENV NODE_ENV production
 RUN set -eux \
     && apt-get update && apt-get install -y --no-install-recommends \
     tini \
-    libcap2-bin \
     && rm -rf /var/lib/apt/lists/*
 
 RUN set -eux \
@@ -37,6 +36,11 @@ RUN set -eux \
 FROM 818746774418.dkr.ecr.eu-west-1.amazonaws.com/nodejs-base-image:18.16.1-bookworm-slim
 
 ENV NODE_ENV production
+
+RUN set -eux \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    libcap2-bin \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /usr/bin/tini /usr/bin/tini
 
