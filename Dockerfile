@@ -2,7 +2,7 @@
 # Builder Image
 # -------------------------------------------------------------------------------------------------
 
-FROM 818746774418.dkr.ecr.eu-west-1.amazonaws.com/nodejs-base-image:18.16.1-bookworm AS builder
+FROM AWS_ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/nodejs-base-image:18.16.1-bookworm AS builder
 
 ENV NODE_ENV production
 
@@ -22,8 +22,7 @@ WORKDIR /usr/src/app
 COPY --chown=node:node package*.json ./
 
 RUN set -eux \
-    && npm ci --omit=dev \
-    && npm cache clean --force
+    && npm ci --omit=dev
 
 COPY --chown=node:node src ./src
 
@@ -34,15 +33,22 @@ RUN set -eux \
 # Production Image
 # -------------------------------------------------------------------------------------------------
 
-FROM 818746774418.dkr.ecr.eu-west-1.amazonaws.com/nodejs-base-image:18.16.1-bookworm-slim
+FROM AWS_ACCOUNT_ID.dkr.ecr.REGION.amazonaws.com/nodejs-base-image:18.16.1-bookworm-slim
 
 ENV NODE_ENV production
+
+RUN set -eux \
+    && apt-get update && apt-get install -y --no-install-recommends \
+    libcap2-bin \
+    && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /usr/bin/tini /usr/bin/tini
 
 RUN set -eux \
     && mkdir -p /opt/app \
     && chown -R node:node /opt/app
+
+RUN setcap cap_net_bind_service=+eip `readlink -f \`which node\``
 
 USER node
 
@@ -52,7 +58,7 @@ COPY --chown=node:node --from=builder /usr/src/app/package*.json ./
 COPY --chown=node:node --from=builder /usr/src/app/node_modules ./node_modules
 COPY --chown=node:node --from=builder /usr/src/app/src ./src
 
-EXPOSE 8080
+EXPOSE 80
 
 ENTRYPOINT ["tini", "--"]
 
