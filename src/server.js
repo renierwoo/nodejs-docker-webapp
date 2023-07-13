@@ -7,13 +7,19 @@ const morgan = require('morgan');
 const PORT = 80;
 const HOST = '0.0.0.0';
 
-// App
+// Create an instance of the Express application.
 const app = express();
+
+// Define a custom middleware to exclude Kubernetes probes from logging.
+const skipKubernetesProbe = (req, res) => {
+    return req.headers['user-agent'].startsWith('kube-probe');
+};
 
 // Parse JSON request body
 app.use(express.json());
 
-app.use(morgan('combined'));
+// Configure Morgan with the custom middleware.
+app.use(morgan('combined', { skip: skipKubernetesProbe }));
 
 app.post('/api/users', (req, res) => {
     // Access request body data
@@ -26,10 +32,12 @@ app.post('/api/users', (req, res) => {
     res.send(`User ${name} with email ${email} created successfully.`);
 });
 
+// Start the server.
 app.get('/', (req, res) => {
     res.send('Hello World!');
 });
 
+// Listen for incoming requests on the specified PORT and HOST.
 app.listen(PORT, HOST, () => {
     console.log(`Running on http://${HOST}:${PORT}`);
 });
