@@ -3,6 +3,15 @@
 const express = require('express');
 const morgan = require('morgan');
 
+// Define a custom middleware for logging the request body.
+const logRequestBody = (req, res, next) => {
+    // Logs the request body
+    console.log('Request Body:', req.body);
+
+    // Calls the next middleware
+    next();
+};
+
 // Constants
 const PORT = 80;
 const HOST = '0.0.0.0';
@@ -18,6 +27,9 @@ const skipKubernetesProbe = (req, res) => {
 // Parse JSON request body
 app.use(express.json());
 
+// Use the custom middleware
+app.use(logRequestBody);
+
 // Configure Morgan with the custom middleware.
 app.use(morgan('combined', { skip: skipKubernetesProbe }));
 
@@ -29,7 +41,7 @@ app.post('/api/users', (req, res) => {
     // For example, save the user to a database
 
     // Send a response
-    res.send(`User ${name} with email ${email} created successfully.`);
+    res.send(`User ${name} with email ${email} created successfully.\n`);
 });
 
 // Start the server.
