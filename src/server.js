@@ -5,18 +5,21 @@ const morgan = require('morgan');
 
 // Define the custom logger function
 const logger = (tokens, req, res) => {
-    // Extract the request method, URL, status code, and response time from Morgan tokens
-    const { method, url, status, responseTime } = tokens;
-
     // Access request body data
     const body = JSON.stringify(req.body);
 
+    // Define a custom token for response time
+    morgan.token('response-time-ms', (req, res) => {
+      const time = tokens['response-time'](req, res);
+      return time ? `${time}ms` : '';
+    });
+
     // Log the request method, URL, status code, response time, and request body
     console.log(
-      `Request Method: ${method(req, res)}\n` +
-      `URL: ${url(req, res)}\n` +
-      `Status: ${status(req, res)}\n` +
-      `Response Time: ${responseTime(req, res)}ms\n` +
+      `Request Method: ${tokens.method(req, res)}\n` +
+      `URL: ${tokens.url(req, res)}\n` +
+      `Status: ${tokens.status(req, res)}\n` +
+      `Response Time: ${tokens['response-time-ms'](req, res)}\n` +
       `Request Body: ${body}`
     );
 };
@@ -37,10 +40,10 @@ const HOST = '0.0.0.0';
 // Create an instance of the Express application.
 const app = express();
 
-// Define a custom middleware to exclude Kubernetes probes from logging.
-const skipKubernetesProbe = (req, res) => {
-    return req.headers['user-agent'].startsWith('kube-probe');
-};
+// // Define a custom middleware to exclude Kubernetes probes from logging.
+// const skipKubernetesProbe = (req, res) => {
+//     return req.headers['user-agent'].startsWith('kube-probe');
+// };
 
 // Use the custom logger function in Morgan middleware
 app.use(morgan(logger));
