@@ -8,18 +8,12 @@ const logger = (tokens, req, res) => {
     // Access request body data
     const body = JSON.stringify(req.body);
 
-    // Define a custom token for response time
-    morgan.token('response-time-ms', (req, res) => {
-      const time = tokens['response-time'](req, res);
-      return time ? `${time}ms` : '';
-    });
-
     // Log the request method, URL, status code, response time, and request body
     console.log(
       `Request Method: ${tokens.method(req, res)}\n` +
       `URL: ${tokens.url(req, res)}\n` +
       `Status: ${tokens.status(req, res)}\n` +
-      `Response Time: ${tokens['response-time-ms'](req, res)}\n` +
+      `Response Time: ${tokens['response-time'](req, res)} ms\n` +
       `Request Body: ${body}`
     );
 };
@@ -45,11 +39,11 @@ const app = express();
 //     return req.headers['user-agent'].startsWith('kube-probe');
 // };
 
-// Use the custom logger function in Morgan middleware
-app.use(morgan(logger));
+// // Use the custom logger function in Morgan middleware
+// app.use(morgan(logger));
 
-// Parse JSON request body
-app.use(express.json());
+// // Parse JSON request body
+// app.use(express.json());
 
 // // Use the custom middleware
 // app.use(logRequestBody);
@@ -57,7 +51,7 @@ app.use(express.json());
 // // Configure Morgan with the custom middleware.
 // app.use(morgan('combined', { skip: skipKubernetesProbe }));
 
-app.post('/api/users', (req, res) => {
+app.post('/api/users', morgan(logger), (req, res) => {
     // Access request body data
     const { name, email } = req.body;
 
