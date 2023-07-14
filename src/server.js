@@ -3,29 +3,14 @@
 const express = require('express');
 const morgan = require('morgan');
 
-// Define the custom logger function
-const logger = (tokens, req, res) => {
-    // Access request body data
-    const body = JSON.stringify(req.body);
+// Define a custom middleware for logging the request body.
+const logRequestBody = (req, res, next) => {
+    // Logs the request body
+    console.log('Request Body:', req.body);
 
-    // Log the request method, URL, status code, response time, and request body
-    console.log(
-      `Request Method: ${tokens.method(req, res)}\n` +
-      `URL: ${tokens.url(req, res)}\n` +
-      `Status: ${tokens.status(req, res)}\n` +
-      `Response Time: ${tokens['response-time'](req, res)} ms\n` +
-      `Request Body: ${body}`
-    );
+    // Calls the next middleware
+    next();
 };
-
-// // Define a custom middleware for logging the request body.
-// const logRequestBody = (req, res, next) => {
-//     // Logs the request body
-//     console.log('Request Body:', req.body);
-
-//     // Calls the next middleware
-//     next();
-// };
 
 // Constants
 const PORT = 80;
@@ -34,24 +19,20 @@ const HOST = '0.0.0.0';
 // Create an instance of the Express application.
 const app = express();
 
-// // Define a custom middleware to exclude Kubernetes probes from logging.
-// const skipKubernetesProbe = (req, res) => {
-//     return req.headers['user-agent'].startsWith('kube-probe');
-// };
+// Define a custom middleware to exclude Kubernetes probes from logging.
+const skipKubernetesProbe = (req, res) => {
+    return req.headers['user-agent'].startsWith('kube-probe');
+};
 
-// // Use the custom logger function in Morgan middleware
-// app.use(morgan(logger));
+// Parse JSON request body
+app.use(express.json());
 
-// // Parse JSON request body
-// app.use(express.json());
+// Configure Morgan with the custom middleware.
+app.use(morgan('combined', { skip: skipKubernetesProbe }));
 
-// // Use the custom middleware
-// app.use(logRequestBody);
+app.use(logRequestBody);
 
-// // Configure Morgan with the custom middleware.
-// app.use(morgan('combined', { skip: skipKubernetesProbe }));
-
-app.post('/api/users', morgan(logger), (req, res) => {
+app.post('/api/users', (req, res) => {
     // Access request body data
     const { name, email } = req.body;
 
